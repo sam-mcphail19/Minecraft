@@ -4,7 +4,7 @@ using System.ComponentModel;
 using UnityEngine;
 
 public class Chunk : MonoBehaviour {
-	private int[] blocks = new int[Constants.ChunkSize * Constants.ChunkSize * Constants.WorldHeight];
+	private int[,,] blocks = new int[Constants.ChunkSize, Constants.WorldHeight, Constants.ChunkSize];
 	private Vector3 chunkOrigin;
 
 	private MeshFilter meshFilter;
@@ -26,7 +26,7 @@ public class Chunk : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() { }
-	
+
 	public void Generate() {
 		Populate();
 		InitMesh();
@@ -34,22 +34,47 @@ public class Chunk : MonoBehaviour {
 	}
 
 	void Populate() {
+		float[,] heightMap = NoiseGenerator.GenerateNoiseMap(new Vector2(chunkOrigin.x, chunkOrigin.z));
 		for (int x = 0; x < Constants.ChunkSize; x++) {
 			for (int z = 0; z < Constants.ChunkSize; z++) {
-				int y = Mathf.CeilToInt(Mathf.PerlinNoise(x * 0.3f, z * 0.3f) * 2f);
-				Vector3 blockPos = new Vector3(x, y, z);
+				Vector3 blockPos = new Vector3(x, heightMap[x, z] * 16, z);
 				SetBlock(blockPos, BlockRegistry.GetBlock((int) BlockRegistry.BLOCKS.DIRT));
 			}
 		}
 	}
 
-	void CreateMesh() {
-		for (int i = 0; i < Constants.ChunkSize * Constants.ChunkSize * Constants.WorldHeight; i++) {
-			if (blocks[i] == (int) BlockRegistry.BLOCKS.AIR)
-				continue;
+	void InitMesh() {
+		if (!meshFilter)
+			meshFilter = gameObject.AddComponent<MeshFilter>();
+		if (!meshRenderer) {
+			meshRenderer = gameObject.AddComponent<MeshRenderer>();
+			meshRenderer.material = new Material(Shader.Find("Standard"));
+		}
 
-			for (int j = 0; j < 6; j++) {
-				CreateQuad((Direction) j, IndexToPos(i) + chunkOrigin);
+		if (!meshCollider)
+			meshCollider = gameObject.AddComponent<MeshCollider>();
+
+		mesh = new Mesh();
+
+		vertices = new List<Vector3>();
+		triangles = new List<int>();
+		normals = new List<Vector3>();
+		uv = new List<Vector2>();
+
+		vertexCount = 0;
+	}
+
+	void CreateMesh() {
+		for (int x = 0; x < Constants.ChunkSize; x++) {
+			for (int z = 0; z < Constants.ChunkSize; z++) {
+				for (int y = 0; y < Constants.WorldHeight; y++) {
+					if (blocks[x, y, z] == (int) BlockRegistry.BLOCKS.AIR)
+						continue;
+
+					for (int j = 0; j < 6; j++) {
+						CreateQuad((Direction) j, new Vector3(x, y, z) + chunkOrigin);
+					}
+				}
 			}
 		}
 
@@ -61,26 +86,6 @@ public class Chunk : MonoBehaviour {
 		mesh.RecalculateBounds();
 		meshFilter.mesh = mesh;
 		meshCollider.sharedMesh = mesh;
-	}
-
-	void InitMesh() {
-		if (!meshFilter)
-			meshFilter = gameObject.AddComponent<MeshFilter>();
-		if (!meshRenderer) {
-			meshRenderer = gameObject.AddComponent<MeshRenderer>();
-			meshRenderer.material = GetComponent<Renderer>().material;
-		}
-
-		if (!meshCollider)
-			meshCollider = gameObject.AddComponent<MeshCollider>();
-		mesh = new Mesh();
-
-		vertices = new List<Vector3>();
-		triangles = new List<int>();
-		normals = new List<Vector3>();
-		uv = new List<Vector2>();
-
-		vertexCount = 0;
 	}
 
 	void CreateQuad(Direction direction, Vector3 pos) {
@@ -105,29 +110,15 @@ public class Chunk : MonoBehaviour {
 	}
 
 	Block GetBlock(Vector3 chunkPos) {
-		return BlockRegistry.GetBlock(blocks[PosToIndex(chunkPos)]);
+		return BlockRegistry.GetBlock(blocks[(int) chunkPos.x, (int) chunkPos.y, (int) chunkPos.z]);
 	}
 
 	void SetBlock(Vector3 chunkPos, Block block) {
-		blocks[PosToIndex(chunkPos)] = block.GetIndex();
+		blocks[(int) chunkPos.x, (int) chunkPos.y, (int) chunkPos.z] = block.GetIndex();
 	}
 
 	public void SetChunkOrigin(Vector3 chunkOrigin) {
 		this.chunkOrigin = chunkOrigin;
-	}
-
-	// https://stackoverflow.com/questions/7367770/how-to-flatten-or-index-3d-array-in-1d-array
-	static Vector3 IndexToPos(int index) {
-		int y = index / (Constants.ChunkSize * Constants.ChunkSize);
-		index -= y * Constants.ChunkSize * Constants.ChunkSize;
-		int z = index / Constants.ChunkSize;
-		int x = index % Constants.ChunkSize;
-
-		return new Vector3(x, y, z);
-	}
-
-	static int PosToIndex(Vector3 pos) {
-		return (int) (pos.y * Constants.ChunkSize * Constants.ChunkSize + pos.z * Constants.ChunkSize + pos.x);
 	}
 
 	Vector3 DirectionToVector(Direction direction) {
