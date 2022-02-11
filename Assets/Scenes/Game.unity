@@ -466,7 +466,7 @@ MonoBehaviour:
   height: 64
   seed: 0
   scale: 75
-  octaves: 6
+  octaves: 4
   persistance: 0.5
   lacunarity: 2.8
   offset: {x: 0.3, y: 0.7}

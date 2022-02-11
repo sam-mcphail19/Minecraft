@@ -1,16 +1,13 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(WorldGenerator))]
+[CustomEditor(typeof(World))]
 public class WorldGeneratorEditor : Editor {
 	public override void OnInspectorGUI() {
-		WorldGenerator worldGenerator = (WorldGenerator) target;
+		World world = (World) target;
 		if (DrawDefaultInspector()) {
-			if (worldGenerator.autoUpdate)
-				worldGenerator.RegenerateWorld();
-
 			if (GUILayout.Button("Generate"))
-				worldGenerator.RegenerateWorld();
+				world.RegenerateWorld();
 		}
 	}
 }

@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
+using MinecraftBlockRegistry;
 
 public class Chunk : MonoBehaviour {
 	private int[,,] blocks = new int[Constants.ChunkSize, Constants.WorldHeight, Constants.ChunkSize];
@@ -27,23 +29,24 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update() { }
 
-	public void Generate() {
-		Populate();
+	public void Generate(World world) {
+		Populate(world);
 		InitMesh();
 		CreateMesh();
 	}
 
-	void Populate() {
-		float[,] heightMap = NoiseGenerator.GenerateNoiseMap(new Vector2(chunkOrigin.x, chunkOrigin.z));
+	public void Populate(World world) {
 		for (int x = 0; x < Constants.ChunkSize; x++) {
 			for (int z = 0; z < Constants.ChunkSize; z++) {
-				Vector3 blockPos = new Vector3(x, heightMap[x, z] * 16, z);
-				SetBlock(blockPos, BlockRegistry.GetBlock((int) BlockRegistry.BLOCKS.DIRT));
+				for (int y = 0; y < Constants.WorldHeight; y++) {
+					Vector3 pos = new Vector3(x, y, z);
+					SetBlock(pos, BlockRegistry.GetBlock(world.GetBlock(pos + chunkOrigin)));
+				}
 			}
 		}
 	}
 
-	void InitMesh() {
+	public void InitMesh() {
 		if (!meshFilter)
 			meshFilter = gameObject.AddComponent<MeshFilter>();
 		if (!meshRenderer) {
@@ -64,15 +67,18 @@ public class Chunk : MonoBehaviour {
 		vertexCount = 0;
 	}
 
-	void CreateMesh() {
+	public void CreateMesh() {
 		for (int x = 0; x < Constants.ChunkSize; x++) {
 			for (int z = 0; z < Constants.ChunkSize; z++) {
 				for (int y = 0; y < Constants.WorldHeight; y++) {
-					if (blocks[x, y, z] == (int) BlockRegistry.BLOCKS.AIR)
+					if (blocks[x, y, z] == (int) BlockType.Air)
 						continue;
 
-					for (int j = 0; j < 6; j++) {
-						CreateQuad((Direction) j, new Vector3(x, y, z) + chunkOrigin);
+					List<BlockType> neighbours = GetNeighbours(x, y, z);
+					if (neighbours.Contains(BlockType.Air) || neighbours.Contains(BlockType.Null)) {
+						for (int j = 0; j < 6; j++) {
+							CreateQuad((Direction) j, new Vector3(x, y, z) + chunkOrigin);
+						}
 					}
 				}
 			}
@@ -86,6 +92,11 @@ public class Chunk : MonoBehaviour {
 		mesh.RecalculateBounds();
 		meshFilter.mesh = mesh;
 		meshCollider.sharedMesh = mesh;
+	}
+
+	public void UpdateMesh() {
+		InitMesh();
+		CreateMesh();
 	}
 
 	void CreateQuad(Direction direction, Vector3 pos) {
@@ -109,12 +120,52 @@ public class Chunk : MonoBehaviour {
 		uv.AddRange(new[] {new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 0), new Vector2(0, 1)});
 	}
 
-	Block GetBlock(Vector3 chunkPos) {
-		return BlockRegistry.GetBlock(blocks[(int) chunkPos.x, (int) chunkPos.y, (int) chunkPos.z]);
+	public int GetHighestBlockHeightAtPoint(int x, int z) {
+		if (x < 0 || x >= Constants.ChunkSize || z < 0 || z >= Constants.ChunkSize) {
+			Debug.LogError($"({x},{z}) is not within the chunk");
+			return -1;
+		}
+
+		for (int y = Constants.WorldHeight - 1; y >= 0; y--) {
+			if (blocks[x, y, z] != (int) BlockType.Air) {
+				return y;
+			}
+		}
+
+		Debug.LogError($"No block found in chunk at: ({x},{z})");
+		return -1;
 	}
 
-	void SetBlock(Vector3 chunkPos, Block block) {
-		blocks[(int) chunkPos.x, (int) chunkPos.y, (int) chunkPos.z] = block.GetIndex();
+	public List<BlockType> GetNeighbours(int x, int y, int z) {
+		// Order is right, left, up, down, front, back
+		return new List<BlockType> {
+			x < Constants.ChunkSize - 1 ? (BlockType) blocks[x + 1, y, z] : BlockType.Null,
+			x > 0 ? (BlockType) blocks[x - 1, y, z] : BlockType.Null,
+			y < Constants.WorldHeight - 1 ? (BlockType) blocks[x, y + 1, z] : BlockType.Null,
+			y > 0 ? (BlockType) blocks[x, y - 1, z] : BlockType.Null,
+			z < Constants.ChunkSize - 1 ? (BlockType) blocks[x, y, z + 1] : BlockType.Null,
+			z > 0 ? (BlockType) blocks[x, y, z - 1] : BlockType.Null
+		};
+	}
+
+	public Block GetBlock(int x, int y, int z) {
+		return BlockRegistry.GetBlock(blocks[x, y, z]);
+	}
+
+	public Block GetBlock(Vector3 chunkPos) {
+		return GetBlock((int) chunkPos.x, (int) chunkPos.y, (int) chunkPos.z);
+	}
+
+	public void SetBlock(int x, int y, int z, Block block) {
+		blocks[x, y, z] = block.GetIndex();
+	}
+
+	public void SetBlock(Vector3 chunkPos, Block block) {
+		SetBlock((int) chunkPos.x, (int) chunkPos.y, (int) chunkPos.z, block);
+	}
+
+	public Vector3 GetChunkOrigin() {
+		return chunkOrigin;
 	}
 
 	public void SetChunkOrigin(Vector3 chunkOrigin) {

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MinecraftBlockRegistry;
 
 public class BlockRegistry : MonoBehaviour {
 	private static Dictionary<int, Block> blocks = new Dictionary<int, Block>();
@@ -13,8 +14,10 @@ public class BlockRegistry : MonoBehaviour {
 	void Update() { }
 
 	public static void Init() {
-		AddBlock(new Block((int) BLOCKS.AIR, "Air"));
-		AddBlock(new Block((int) BLOCKS.DIRT, "Dirt"));
+		AddBlock(new Block((int) BlockType.Air, "Air"));
+		AddBlock(new Block((int) BlockType.Bedrock, "Bedrock"));
+		AddBlock(new Block((int) BlockType.Stone, "Stone"));
+		AddBlock(new Block((int) BlockType.Dirt, "Dirt"));
 	}
 
 	public static void AddBlock(Block block) {
@@ -30,9 +33,14 @@ public class BlockRegistry : MonoBehaviour {
 		blocks.TryGetValue(0, out block);
 		return block;
 	}
+}
 
-	public enum BLOCKS {
-		AIR = 0,
-		DIRT = 1
+namespace MinecraftBlockRegistry {
+	public enum BlockType {
+		Null = -1,
+		Air = 0,
+		Bedrock = 1,
+		Stone = 2,
+		Dirt = 3
 	}
 }
