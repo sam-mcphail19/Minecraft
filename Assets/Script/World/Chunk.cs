@@ -51,7 +51,9 @@ public class Chunk : MonoBehaviour {
 			meshFilter = gameObject.AddComponent<MeshFilter>();
 		if (!meshRenderer) {
 			meshRenderer = gameObject.AddComponent<MeshRenderer>();
-			meshRenderer.material = new Material(Shader.Find("Standard"));
+			meshRenderer.material = new Material(Shader.Find("Standard")) {
+				mainTexture = BlockRegistry.GetTextureAtlas()
+			};
 		}
 
 		if (!meshCollider)
@@ -77,7 +79,11 @@ public class Chunk : MonoBehaviour {
 					List<BlockType> neighbours = GetNeighbours(x, y, z);
 					if (neighbours.Contains(BlockType.Air) || neighbours.Contains(BlockType.Null)) {
 						for (int j = 0; j < 6; j++) {
-							CreateQuad((Direction) j, new Vector3(x, y, z) + chunkOrigin);
+							CreateQuad(
+								(Direction) j,
+								new Vector3(x, y, z) + chunkOrigin,
+								BlockRegistry.GetTextureId(blocks[x, y, z])
+							);
 						}
 					}
 				}
@@ -99,7 +105,7 @@ public class Chunk : MonoBehaviour {
 		CreateMesh();
 	}
 
-	void CreateQuad(Direction direction, Vector3 pos) {
+	void CreateQuad(Direction direction, Vector3 pos, int textureId) {
 		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[0 + (int) direction * 4]] + pos);
 		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[1 + (int) direction * 4]] + pos);
 		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[2 + (int) direction * 4]] + pos);
@@ -117,7 +123,7 @@ public class Chunk : MonoBehaviour {
 		Vector3 normal = DirectionToVector(direction);
 		normals.AddRange(new[] {normal, normal, normal, normal});
 
-		uv.AddRange(new[] {new Vector2(1, 1), new Vector2(1, 0), new Vector2(0, 0), new Vector2(0, 1)});
+		uv.AddRange(BlockRegistry.GetTextureVertices(textureId));
 	}
 
 	public int GetHighestBlockHeightAtPoint(int x, int z) {

@@ -1,10 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using EasyButtons;
 using UnityEngine;
 using MinecraftBlockRegistry;
 
 public class World : MonoBehaviour {
+	public float offset;
+	public float scale;
+	public int seed;
+
 	private Dictionary<Vector3, Chunk> chunks = new Dictionary<Vector3, Chunk>();
 
 	// Start is called before the first frame update
@@ -13,12 +18,12 @@ public class World : MonoBehaviour {
 		GenerateWorld();
 
 		GameObject.Find("Player").transform.position =
-			new Vector3(0, chunks[Vector3.zero].GetHighestBlockHeightAtPoint(0, 0), 0);
+			new Vector3(0, chunks[Vector3.zero].GetHighestBlockHeightAtPoint(0, 0) + 3, 0);
 	}
 
 	public void GenerateWorld() {
-		int xChunks = 2;
-		int zChunks = 2;
+		int xChunks = 8;
+		int zChunks = 8;
 
 		for (int x = -xChunks / 2; x < xChunks / 2; x++) {
 			for (int z = -zChunks / 2; z < zChunks / 2; z++) {
@@ -34,23 +39,26 @@ public class World : MonoBehaviour {
 	}
 
 	public int GetBlock(int x, int y, int z) {
-		if (y == 0)
+		if (y <= 3)
 			return (int) BlockType.Bedrock;
 
-		float noise = NoiseGenerator.Perlin2D(new Vector2(x, z), 0, 0.25f);
+		float noise = NoiseGenerator.Perlin2D(new Vector2(x, z), offset, scale, seed);
 		int height = Mathf.FloorToInt(42 * noise);
 
-		if (y <= height) {
-			return (int) BlockType.Dirt;
-		}
+		if (y > height)
+			return (int) BlockType.Air;
 
-		return (int) BlockType.Air;
+		if (y > height - 3)
+			return (int) BlockType.Dirt;
+
+		return (int) BlockType.Stone;
 	}
 
 	public int GetBlock(Vector3 pos) {
 		return GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
 	}
 
+	[Button]
 	public void RegenerateWorld() {
 		if (chunks.Count > 0) {
 			foreach (Chunk chunk in chunks.Values) {
