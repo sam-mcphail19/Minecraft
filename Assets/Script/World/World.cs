@@ -8,7 +8,7 @@ using MinecraftBlockRegistry;
 public class World : MonoBehaviour {
 	public float offset;
 	public float scale;
-	public int seed;
+	public ulong seed;
 
 	private Dictionary<Vector3, Chunk> chunks = new Dictionary<Vector3, Chunk>();
 
@@ -37,12 +37,20 @@ public class World : MonoBehaviour {
 			}
 		}
 	}
+	/*
+	 * Multinoise lists the parameters used at the player's position in order to place a biome.
+	   C is continentalness, E is erosion, T is temperature, H is humidity, and W is weirdness.
+		- Continentalness goes up as you go more inland. In areas with low continentalness values, oceans may generate.
+		- Erosion determines how flat or mountainous terrain is. Higher values result in flatter areas, lower values result in mountainous areas.
+		- Temperature and humidity have no impact on the terrain itself, and determining only biome placement.
+		- Weirdness indirectly drives the PV (peaks and valleys) noise and determines which biome variant gets placed.
+	 */
 
 	public int GetBlock(int x, int y, int z) {
 		if (y <= 3)
 			return (int) BlockType.Bedrock;
 
-		float noise = NoiseGenerator.Perlin2D(new Vector2(x, z), offset, scale, seed);
+		float noise = NoiseGenerator.Perlin2D(new Vector2(x, z), offset, scale, 1, seed);
 		int height = Mathf.FloorToInt(42 * noise);
 
 		if (y > height)
