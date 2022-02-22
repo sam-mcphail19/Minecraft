@@ -65,7 +65,7 @@ public class NoiseMap : MonoBehaviour {
 
 	float GetNoise(int x, int y) {
 		return isSharp
-			? NoiseGenerator.Perlin2DSharp(new Vector2(x, y), offset, scale, octaveCount, seed)
+			? NoiseGenerator.Perlin2DSharp(new Vector2(x, y), offset, scale, seed)
 			: NoiseGenerator.Perlin2D(new Vector2(x, y), offset, scale, octaveCount, seed);
 	}
 }
