@@ -63,6 +63,117 @@ public class Constants {
 		3, 7, 2, 6, // Top Face
 		1, 5, 0, 4, // Bottom Face
 		4, 7, 0, 3, // Left Face
-		1, 2, 5, 6  // Right Face
+		1, 2, 5, 6 // Right Face
+	};
+
+	/*
+	 * TODO: Move all of this to some form of config file that is easier to edit and maybe can be automatically written
+	 * to from the generation scenes
+	 */
+
+	public struct NoiseMapParams {
+		public float offset, scale;
+		public int octaveCount;
+		public bool isSharp;
+		public List<float> celThresholds;
+		public ulong seed;
+
+		public NoiseMapParams(float offset, float scale, int octaveCount, bool isSharp, List<float> celThresholds,
+			ulong seed) {
+			this.offset = offset;
+			this.scale = scale;
+			this.octaveCount = octaveCount;
+			this.isSharp = isSharp;
+			this.celThresholds = celThresholds;
+			this.seed = seed;
+		}
+	}
+
+	public static readonly NoiseMapParams Continentalness =
+		new NoiseMapParams(9.78f, 0.05f, 6, false, new List<float> {0.158f, 0.321f, 0.406f, 0.505f, 0.622f}, 346);
+
+	public static readonly NoiseMapParams Erosion =
+		new NoiseMapParams(1.08f, 0.03f, 3, false, new List<float> {0.117f, 0.261f, 0.504f, 0.711f}, 364);
+
+	public static readonly NoiseMapParams PeaksAndValleys =
+		new NoiseMapParams(11.02f, 0.17f, 1, true, new List<float> {0.091f, 0.195f, 0.267f, 0.489f}, 293);
+
+	public static readonly Vector2[] ContinentalnessSplinePoints = {
+		new Vector2(0f, 0f),
+		new Vector2(0.092f, 0f),
+		new Vector2(0.059f, 0f),
+		new Vector2(0.131f, 0f),
+		new Vector2(0.198f, 0f),
+		new Vector2(0.223f, 0f),
+		new Vector2(0.223f, 8.0f),
+		new Vector2(0.223f, 29.8f),
+		new Vector2(0.231f, 27.5f),
+		new Vector2(0.324f, 27.7f),
+		new Vector2(0.406f, 27.8f),
+		new Vector2(0.404f, 26.5f),
+		new Vector2(0.403f, 36.5f),
+		new Vector2(0.403f, 46.6f),
+		new Vector2(0.402f, 47.7f),
+		new Vector2(0.404f, 57.7f),
+		new Vector2(0.406f, 63.4f),
+		new Vector2(0.937f, 64.6f),
+		new Vector2(1f, 65.8f)
+	};
+	
+	public static readonly Vector2[] ErosionSplinePoints = {
+		
+		new Vector2(0f, 125.3f),
+		new Vector2(0.077f, 119.7f),
+		new Vector2(.040f, 94.9f),
+		new Vector2(0.108f, 96.3f),
+		new Vector2(0.175f, 97.7f),
+		new Vector2(0.182f, 68.9f),
+		new Vector2(0.242f, 69.1f),
+		new Vector2(0.281f, 69.3f),
+		new Vector2(0.309f, 79.1f),
+		new Vector2(0.337f, 79.2f),
+		new Vector2(0.425f, 79.3f),
+		new Vector2(0.451f, 19.7f),
+		new Vector2(0.499f, 14.9f),
+		new Vector2(0.529f, 12.1f),
+		new Vector2(0.640f, 11.1f),
+		new Vector2(0.677f, 13.2f),
+		new Vector2(0.710f, 15.1f),
+		new Vector2(0.737f, 37.6f),
+		new Vector2(0.753f, 37.5f),
+		new Vector2(0.785f, 37.3f),
+		new Vector2(0.830f, 37.4f),
+		new Vector2(0.863f, 37.4f),
+		new Vector2(0.882f, 37.4f),
+		new Vector2(0.900f, 15.2f),
+		new Vector2(0.909f, 12.8f),
+		new Vector2(0.916f, 10.5f),
+		new Vector2(0.950f, 4.5f),
+		new Vector2(1f, 4.8f)
+	};
+
+	public static readonly Vector2[] PeaksAndValleysSplinePoints = {
+		new Vector2(0f, 0f),
+		new Vector2(0.033f, 0f),
+		new Vector2(0.058f, 0f),
+		new Vector2(0.061f, 0f),
+		new Vector2(0.098f, 6.0f),
+		new Vector2(0.123f, 8.6f),
+		new Vector2(0.158f, 14.6f),
+		new Vector2(0.226f, 26.5f),
+		new Vector2(0.241f, 32.6f),
+		new Vector2(0.333f, 33.7f),
+		new Vector2(0.412f, 34.6f),
+		new Vector2(0.413f, 34.6f),
+		new Vector2(0.532f, 34.7f),
+		new Vector2(0.633f, 34.9f),
+		new Vector2(0.631f, 48.1f),
+		new Vector2(0.660f, 59.3f),
+		new Vector2(0.680f, 66.7f),
+		new Vector2(0.718f, 79.2f),
+		new Vector2(0.795f, 84.4f),
+		new Vector2(0.854f, 88.5f),
+		new Vector2(0.927f, 87.5f),
+		new Vector2(1f, 88.2f)
 	};
 }
