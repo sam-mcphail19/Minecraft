@@ -14,11 +14,6 @@ public class NoiseMap : MonoBehaviour {
 	public ulong seed;
 	public bool autoUpdate;
 
-	// Start is called before the first frame update
-	void Start() {
-		SetNoiseTexture();
-	}
-
 	public void SetNoiseTexture() {
 		MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
 		meshRenderer.material.mainTexture = CreateNoiseMapTexture();
@@ -29,13 +24,11 @@ public class NoiseMap : MonoBehaviour {
 
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				Color color = Color.Lerp(
+				noiseMap[x * width + y] = Color.Lerp(
 					Color.black,
 					Color.white,
 					GetNoise(x, y)
-				);
-
-				noiseMap[x * width + y] = celThresholds.Count > 0 ? GetColorCel(color) : color;
+				);;
 			}
 		}
 
@@ -46,26 +39,26 @@ public class NoiseMap : MonoBehaviour {
 		return noiseMapTexture;
 	}
 
-	Color GetColorCel(Color color) {
-		if (color.r < celThresholds[0])
-			return Color.black;
+	float GetNoiseCel(float value) {
+		if (value < celThresholds[0])
+			return 0f;
 
 		int i = 1;
 		while (i < celThresholds.Count) {
-			if (color.r < celThresholds[i]) {
-				float colorVal = i / (float) celThresholds.Count;
-				return new Color(colorVal, colorVal, colorVal);
+			if (value < celThresholds[i]) {
+				return i / (float) celThresholds.Count;
 			}
-
 			i++;
 		}
 
-		return Color.white;
+		return 1f;
 	}
 
-	float GetNoise(int x, int y) {
-		return isSharp
+	public float GetNoise(int x, int y) {
+		float noise = isSharp
 			? NoiseGenerator.Perlin2DSharp(new Vector2(x, y), offset, scale, seed)
 			: NoiseGenerator.Perlin2D(new Vector2(x, y), offset, scale, octaveCount, seed);
+
+		return celThresholds.Count > 0 ? GetNoiseCel(noise) : noise;
 	}
 }

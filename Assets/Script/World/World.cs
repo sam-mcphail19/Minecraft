@@ -12,9 +12,20 @@ public class World : MonoBehaviour {
 
 	private Dictionary<Vector3, Chunk> chunks = new Dictionary<Vector3, Chunk>();
 
+	private NoiseMap continentalness;
+	private NoiseMap erosion;
+	private NoiseMap peaksAndValleys;
+
+	private Path continentalnessShape;
+	private Path erosionShape;
+	private Path peaksAndValleysShape;
+
 	// Start is called before the first frame update
 	void Start() {
 		BlockRegistry.Init();
+		InitNoiseMaps();
+		InitTerrainHeightSplines();
+
 		GenerateWorld();
 
 		GameObject.Find("Player").transform.position =
@@ -50,8 +61,14 @@ public class World : MonoBehaviour {
 		if (y <= 3)
 			return (int) BlockType.Bedrock;
 
-		float noise = NoiseGenerator.Perlin2D(new Vector2(x, z), offset, scale, 1, seed);
-		int height = Mathf.FloorToInt(42 * noise);
+		//float noise = NoiseGenerator.Perlin2D(new Vector2(x, z), offset, scale, 1, seed);
+		//int height = Mathf.FloorToInt(42 * noise);
+
+		float c = continentalnessShape.Evaluate(continentalness.GetNoise(x, z));
+		float e = erosionShape.Evaluate(erosion.GetNoise(x, z));
+		float p = peaksAndValleysShape.Evaluate(peaksAndValleys.GetNoise(x, z));
+
+		int height = Mathf.FloorToInt((c + e + p) / 3);
 
 		if (y > height)
 			return (int) BlockType.Air;
@@ -64,6 +81,41 @@ public class World : MonoBehaviour {
 
 	public int GetBlock(Vector3 pos) {
 		return GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
+	}
+
+	void InitNoiseMaps() {
+		continentalness = gameObject.AddComponent<NoiseMap>();
+		continentalness.offset = Constants.Continentalness.offset;
+		continentalness.scale = Constants.Continentalness.scale;
+		continentalness.octaveCount = Constants.Continentalness.octaveCount;
+		continentalness.isSharp = Constants.Continentalness.isSharp;
+		//continentalness.celThresholds = Constants.Continentalness.celThresholds;
+		continentalness.celThresholds = new List<float>();
+		continentalness.seed = Constants.Continentalness.seed;
+
+		erosion = gameObject.AddComponent<NoiseMap>();
+		erosion.offset = Constants.Erosion.offset;
+		erosion.scale = Constants.Erosion.scale;
+		erosion.octaveCount = Constants.Erosion.octaveCount;
+		erosion.isSharp = Constants.Erosion.isSharp;
+		//erosion.celThresholds = Constants.Erosion.celThresholds;
+		erosion.celThresholds = new List<float>();
+		erosion.seed = Constants.Erosion.seed;
+
+		peaksAndValleys = gameObject.AddComponent<NoiseMap>();
+		peaksAndValleys.offset = Constants.PeaksAndValleys.offset;
+		peaksAndValleys.scale = Constants.PeaksAndValleys.scale;
+		peaksAndValleys.octaveCount = Constants.PeaksAndValleys.octaveCount;
+		peaksAndValleys.isSharp = Constants.PeaksAndValleys.isSharp;
+		//peaksAndValleys.celThresholds = Constants.PeaksAndValleys.celThresholds;
+		peaksAndValleys.celThresholds = new List<float>();
+		peaksAndValleys.seed = Constants.PeaksAndValleys.seed;
+	}
+
+	void InitTerrainHeightSplines() {
+		continentalnessShape = new Path(Constants.ContinentalnessSplinePoints);
+		erosionShape = new Path(Constants.ErosionSplinePoints);
+		peaksAndValleysShape = new Path(Constants.PeaksAndValleysSplinePoints);
 	}
 
 	[Button]
