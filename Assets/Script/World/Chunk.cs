@@ -14,7 +14,7 @@ public class Chunk : MonoBehaviour {
 	private MeshCollider meshCollider;
 	private Mesh mesh;
 
-	private int vertexCount = 0;
+	public int vertexCount = 0;
 	private List<Vector3> vertices = new List<Vector3>();
 	private List<int> triangles = new List<int>();
 	private List<Vector3> normals = new List<Vector3>();
@@ -26,21 +26,18 @@ public class Chunk : MonoBehaviour {
 		gameObject.layer = 6;
 	}
 
-	// Update is called once per frame
-	void Update() { }
-
-	public void Generate(World world) {
-		Populate(world);
+	public void Generate() {
+		Populate();
 		InitMesh();
 		CreateMesh();
 	}
 
-	public void Populate(World world) {
+	public void Populate() {
 		for (int x = 0; x < Constants.ChunkSize; x++) {
 			for (int z = 0; z < Constants.ChunkSize; z++) {
 				for (int y = 0; y < Constants.WorldHeight; y++) {
 					Vector3 pos = new Vector3(x, y, z);
-					SetBlock(pos, BlockRegistry.GetBlock(world.GetBlock(pos + chunkOrigin)));
+					SetBlock(pos, BlockRegistry.GetBlock(World.GetBlock(pos + chunkOrigin)));
 				}
 			}
 		}
@@ -79,17 +76,20 @@ public class Chunk : MonoBehaviour {
 					List<BlockType> neighbours = GetNeighbours(x, y, z);
 					if (neighbours.Contains(BlockType.Air) || neighbours.Contains(BlockType.Null)) {
 						for (int j = 0; j < 6; j++) {
-							CreateQuad(
-								(Direction) j,
-								new Vector3(x, y, z) + chunkOrigin,
-								BlockRegistry.GetTextureId(blocks[x, y, z])
-							);
+							if (neighbours[j] == BlockType.Air || neighbours[j] == BlockType.Null)
+								CreateQuad(
+									(Direction) j,
+									new Vector3(x, y, z) + chunkOrigin,
+									BlockRegistry.GetTextureId(blocks[x, y, z])
+								);
 						}
 					}
 				}
 			}
 		}
+	}
 
+	public void ApplyMesh() {
 		mesh.vertices = vertices.ToArray();
 		mesh.triangles = triangles.ToArray();
 		mesh.normals = normals.ToArray();
@@ -103,6 +103,11 @@ public class Chunk : MonoBehaviour {
 	public void UpdateMesh() {
 		InitMesh();
 		CreateMesh();
+	}
+
+	public void DestroyMesh() {
+		InitMesh();
+		ApplyMesh();
 	}
 
 	void CreateQuad(Direction direction, Vector3 pos, int textureId) {
@@ -143,14 +148,14 @@ public class Chunk : MonoBehaviour {
 	}
 
 	public List<BlockType> GetNeighbours(int x, int y, int z) {
-		// Order is right, left, up, down, front, back
+		// Order is front, back, top, bottom, left, right
 		return new List<BlockType> {
-			x < Constants.ChunkSize - 1 ? (BlockType) blocks[x + 1, y, z] : BlockType.Null,
-			x > 0 ? (BlockType) blocks[x - 1, y, z] : BlockType.Null,
+			z > 0 ? (BlockType) blocks[x, y, z - 1] : BlockType.Null,
+			z < Constants.ChunkSize - 1 ? (BlockType) blocks[x, y, z + 1] : BlockType.Null,
 			y < Constants.WorldHeight - 1 ? (BlockType) blocks[x, y + 1, z] : BlockType.Null,
 			y > 0 ? (BlockType) blocks[x, y - 1, z] : BlockType.Null,
-			z < Constants.ChunkSize - 1 ? (BlockType) blocks[x, y, z + 1] : BlockType.Null,
-			z > 0 ? (BlockType) blocks[x, y, z - 1] : BlockType.Null
+			x > 0 ? (BlockType) blocks[x - 1, y, z] : BlockType.Null,
+			x < Constants.ChunkSize - 1 ? (BlockType) blocks[x + 1, y, z] : BlockType.Null
 		};
 	}
 

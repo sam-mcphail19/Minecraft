@@ -76,27 +76,24 @@ public class Constants {
 		public int octaveCount;
 		public bool isSharp;
 		public List<float> celThresholds;
-		public ulong seed;
 
-		public NoiseMapParams(float offset, float scale, int octaveCount, bool isSharp, List<float> celThresholds,
-			ulong seed) {
+		public NoiseMapParams(float offset, float scale, int octaveCount, bool isSharp, List<float> celThresholds) {
 			this.offset = offset;
 			this.scale = scale;
 			this.octaveCount = octaveCount;
 			this.isSharp = isSharp;
 			this.celThresholds = celThresholds;
-			this.seed = seed;
 		}
 	}
 
 	public static readonly NoiseMapParams Continentalness =
-		new NoiseMapParams(9.78f, 0.05f, 6, false, new List<float> {0.158f, 0.321f, 0.406f, 0.505f, 0.622f}, 346);
+		new NoiseMapParams(9.78f, 0.05f, 6, false, new List<float> {0.158f, 0.321f, 0.406f, 0.505f, 0.622f});
 
 	public static readonly NoiseMapParams Erosion =
-		new NoiseMapParams(1.08f, 0.03f, 3, false, new List<float> {0.117f, 0.261f, 0.504f, 0.711f}, 364);
+		new NoiseMapParams(1.08f, 0.03f, 3, false, new List<float> {0.117f, 0.261f, 0.504f, 0.711f});
 
 	public static readonly NoiseMapParams PeaksAndValleys =
-		new NoiseMapParams(11.02f, 0.17f, 1, true, new List<float> {0.091f, 0.195f, 0.267f, 0.489f}, 293);
+		new NoiseMapParams(11.02f, 0.17f, 1, true, new List<float> {0.091f, 0.195f, 0.267f, 0.489f});
 
 	public static readonly Vector2[] ContinentalnessSplinePoints = {
 		new Vector2(0f, 0f),

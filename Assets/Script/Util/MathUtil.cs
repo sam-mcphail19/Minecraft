@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class MathUtil {
-
 	public static Vector2 EvaluateQuadratic(Vector2 a, Vector2 b, Vector2 c, float t) {
 		Vector2 p0 = Vector2.Lerp(a, b, t);
 		Vector2 p1 = Vector2.Lerp(b, c, t);
@@ -21,5 +20,9 @@ public static class MathUtil {
 
 	public static Vector2 EvaluateCubic(Vector2[] points, float t) {
 		return EvaluateCubic(points[0], points[1], points[2], points[3], t);
+	}
+
+	public static int RoundToMultipleOf(float x, int baseInt) {
+		return (int) Math.Round(x / baseInt) * baseInt;
 	}
 }
