@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using MinecraftBlockRegistry;
 using Unity.Jobs;
@@ -21,6 +19,16 @@ public class World : MonoBehaviour {
 	private static Path erosionShape;
 	private static Path peaksAndValleysShape;
 
+	void OnGUI() {
+		Vector3 playerPos = GameObject.Find("Player").transform.position;
+		GUI.Label(new Rect(10, 10, 150, 20), "Position: " + playerPos);
+		GUI.Label(new Rect(10, 35, 150, 20), "C: " + continentalness.GetNoise(playerPos.x, playerPos.z));
+		GUI.Label(new Rect(10, 60, 150, 20), "E: " + erosion.GetNoise(playerPos.x, playerPos.z));
+		GUI.Label(new Rect(10, 85, 150, 20), "PV: " + peaksAndValleys.GetNoise(playerPos.x, playerPos.z));
+
+		GUI.Label(new Rect(Screen.width - 150, 10, 150, 20), "FPS: " + 1.0f / Time.smoothDeltaTime);
+	}
+
 	// Start is called before the first frame update
 	void Start() {
 		BlockRegistry.Init();
@@ -29,7 +37,7 @@ public class World : MonoBehaviour {
 
 		chunkManager = gameObject.AddComponent<ChunkManager>();
 		chunkManager.SetViewDistance(viewDistance);
-		
+
 		JobHandle originChunkJob = chunkManager.GenerateChunk(Vector3.zero);
 		originChunkJob.Complete();
 
@@ -68,33 +76,21 @@ public class World : MonoBehaviour {
 	}
 
 	void InitNoiseMaps() {
-		continentalness = gameObject.AddComponent<NoiseMap>();
-		continentalness.offset = Constants.Continentalness.offset;
-		continentalness.scale = Constants.Continentalness.scale;
-		continentalness.octaveCount = Constants.Continentalness.octaveCount;
-		continentalness.isSharp = Constants.Continentalness.isSharp;
-		continentalness.celThresholds = new List<float>();
+		List<NoiseMap> noiseMaps = JsonUtil.LoadNoiseMaps();
+
+		continentalness = noiseMaps[0];
+		erosion = noiseMaps[1];
+		peaksAndValleys = noiseMaps[2];
+
 		continentalness.seed = seed;
-
-		erosion = gameObject.AddComponent<NoiseMap>();
-		erosion.offset = Constants.Erosion.offset;
-		erosion.scale = Constants.Erosion.scale;
-		erosion.octaveCount = Constants.Erosion.octaveCount;
-		erosion.isSharp = Constants.Erosion.isSharp;
-		erosion.celThresholds = new List<float>();
 		erosion.seed = seed;
-
-		peaksAndValleys = gameObject.AddComponent<NoiseMap>();
-		peaksAndValleys.offset = Constants.PeaksAndValleys.offset;
-		peaksAndValleys.scale = Constants.PeaksAndValleys.scale;
-		peaksAndValleys.octaveCount = Constants.PeaksAndValleys.octaveCount;
-		peaksAndValleys.isSharp = Constants.PeaksAndValleys.isSharp;
-		peaksAndValleys.celThresholds = new List<float>();
 		peaksAndValleys.seed = seed;
 	}
 
 	void InitTerrainHeightSplines() {
-		continentalnessShape = new Path(Constants.ContinentalnessSplinePoints);
+		List<Path> noiseMapHeights = JsonUtil.LoadNoiseMapHeights();
+		continentalnessShape = noiseMapHeights[0];
+		JsonUtil.PrintToJson(continentalnessShape);
 		erosionShape = new Path(Constants.ErosionSplinePoints);
 		peaksAndValleysShape = new Path(Constants.PeaksAndValleysSplinePoints);
 	}

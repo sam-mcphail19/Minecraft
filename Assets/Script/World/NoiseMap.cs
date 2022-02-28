@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NoiseMap : MonoBehaviour {
+public class NoiseMap {
 	public int width = 100;
 	public int height = 100;
 	public float offset = 0f;
@@ -13,11 +13,7 @@ public class NoiseMap : MonoBehaviour {
 	[Range(0, 1)] public List<float> celThresholds;
 	public ulong seed;
 	public bool autoUpdate;
-
-	public void SetNoiseTexture() {
-		MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
-		meshRenderer.material.mainTexture = CreateNoiseMapTexture();
-	}
+	public string mapName;
 
 	Texture2D CreateNoiseMapTexture() {
 		Color[] noiseMap = new Color[width * height];
@@ -54,7 +50,7 @@ public class NoiseMap : MonoBehaviour {
 		return 1f;
 	}
 
-	public float GetNoise(int x, int y) {
+	public float GetNoise(float x, float y) {
 		float noise = isSharp
 			? NoiseGenerator.Perlin2DSharp(new Vector2(x, y), offset, scale, seed)
 			: NoiseGenerator.Perlin2D(new Vector2(x, y), offset, scale, octaveCount, seed);

@@ -5,6 +5,7 @@ using UnityEngine;
 
 [CustomEditor(typeof(NoiseMap))]
 public class NoiseMapEditor : Editor {
+	/*
 	public override void OnInspectorGUI() {
 		NoiseMap noiseMap = (NoiseMap) target;
 
@@ -17,5 +18,5 @@ public class NoiseMapEditor : Editor {
 		if (GUILayout.Button("Generate")) {
 			noiseMap.SetNoiseTexture();
 		}
-	}
+	}*/
 }

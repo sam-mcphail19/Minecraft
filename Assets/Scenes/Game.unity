@@ -463,7 +463,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 1234
-  viewDistance: 4
+  viewDistance: 3
 --- !u!1 &1808230227
 GameObject:
   m_ObjectHideFlags: 0

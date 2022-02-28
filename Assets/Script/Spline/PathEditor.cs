@@ -13,10 +13,11 @@ public class PathEditor : Editor {
 
 	private const int yAxisHorizontalOffset = -10;
 	private const int yAxisVerticalOffset = 3;
-	private const int xAxisStretchFactor = 100;
+	private const int xAxisStretchFactor = 200;
 
 	private void OnSceneGUI() {
 		Tools.current = Tool.None;
+		Handles.ScaleHandle(new Vector3(xAxisStretchFactor, 1, 1), Vector3.zero, Quaternion.identity, 1f);
 		DrawAxes();
 		Input();
 		Draw();
@@ -56,7 +57,7 @@ public class PathEditor : Editor {
 		}
 
 		if (guiEvent.type == EventType.KeyDown && guiEvent.keyCode == KeyCode.P) {
-			path.PrintPoints();
+			JsonUtil.PrintToJson(path.WithScale(new Vector2(1f/xAxisStretchFactor, 1f)));
 		}
 
 		if (guiEvent.type == EventType.KeyDown && guiEvent.keyCode == KeyCode.C) {

@@ -1,11 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 
 [System.Serializable]
 public class Path {
 	[SerializeField, HideInInspector] private List<Vector2> points;
+
+	public string MapName = "";
+	public List<SerializedVector2> Points => points.Select(x => new SerializedVector2(x)).ToList();
 
 	public Path(Vector2 centre) {
 		points = new List<Vector2> {
@@ -18,6 +23,12 @@ public class Path {
 
 	public Path(Vector2[] points) {
 		this.points = new List<Vector2>(points);
+	}
+
+	[JsonConstructor]
+	public Path(string mapName, List<SerializedVector2> points) {
+		this.MapName = mapName;
+		this.points = points.Select(x => x.ToVector2()).ToList();
 	}
 
 	public Vector2 this[int i] => points[i];
@@ -95,5 +106,9 @@ public class Path {
 
 		str += "\n]";
 		Debug.Log(str);
+	}
+
+	public Path WithScale(Vector2 scale) {
+		return new Path(points.Select(vec => new Vector2(vec.x * scale.x, vec.y * scale.y)).ToArray());
 	}
 }

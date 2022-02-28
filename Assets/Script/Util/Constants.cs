@@ -5,6 +5,7 @@ using UnityEngine;
 public class Constants {
 	public const int ChunkSize = 16;
 	public const int WorldHeight = 128;
+	public const int ConfigDecimalPrecision = 3;
 
 	public static readonly Vector3[] QuadVertexData = {
 		new Vector3(0, 0, 0), //0
@@ -87,13 +88,13 @@ public class Constants {
 	}
 
 	public static readonly NoiseMapParams Continentalness =
-		new NoiseMapParams(9.78f, 0.05f, 6, false, new List<float> {0.158f, 0.321f, 0.406f, 0.505f, 0.622f});
+		new NoiseMapParams(9123.78f, 0.05f, 6, false, new List<float> {0.158f, 0.321f, 0.406f, 0.505f, 0.622f});
 
 	public static readonly NoiseMapParams Erosion =
-		new NoiseMapParams(1.08f, 0.03f, 3, false, new List<float> {0.117f, 0.261f, 0.504f, 0.711f});
+		new NoiseMapParams(1123.08f, 0.03f, 3, false, new List<float> {0.117f, 0.261f, 0.504f, 0.711f});
 
 	public static readonly NoiseMapParams PeaksAndValleys =
-		new NoiseMapParams(11.02f, 0.17f, 1, true, new List<float> {0.091f, 0.195f, 0.267f, 0.489f});
+		new NoiseMapParams(123.02f, 0.17f, 1, true, new List<float> {0.091f, 0.195f, 0.267f, 0.489f});
 
 	public static readonly Vector2[] ContinentalnessSplinePoints = {
 		new Vector2(0f, 0f),

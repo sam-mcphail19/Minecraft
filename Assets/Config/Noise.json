@@ -1,0 +1,26 @@
+[
+  {
+    "mapName": "Continentalness",
+    "offset": 9123.78,
+    "scale": 0.05,
+    "octaves": 6,
+    "isSharp": false,
+    "celThresholds": []
+  },
+  {
+    "mapName": "Erosion",
+    "offset": 1123.08,
+    "scale": 0.03,
+    "octaves": 3,
+    "isSharp": false,
+    "celThresholds": []
+  },
+  {
+    "mapName": "PeaksAndValleys",
+    "offset": 123.02,
+    "scale": 0.17,
+    "octaves": 1,
+    "isSharp": true,
+    "celThresholds": []
+  }
+]
