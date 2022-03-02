@@ -286,11 +286,11 @@ MonoBehaviour:
   gravity: -15
   maxFallSpeed: -3
   jumpHeight: 2
-  groundCheck: {fileID: 1048302171}
+  groundCheck: {fileID: 0}
   groundDistance: 0.4
   groundMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -387,7 +387,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28aa5c919290956468aedc75d2c34eef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseSens: 1000
+  mouseSens: 2
   playerBody: {fileID: 739469363}
 --- !u!1 &1048302170
 GameObject:
@@ -463,7 +463,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 1234
-  viewDistance: 3
+  viewDistance: 4
 --- !u!1 &1808230227
 GameObject:
   m_ObjectHideFlags: 0

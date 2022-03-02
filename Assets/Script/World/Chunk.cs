@@ -111,10 +111,10 @@ public class Chunk : MonoBehaviour {
 	}
 
 	void CreateQuad(Direction direction, Vector3 pos, int textureId) {
-		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[0 + (int) direction * 4]] + pos);
-		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[1 + (int) direction * 4]] + pos);
-		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[2 + (int) direction * 4]] + pos);
-		vertices.Add(Constants.BlockVertexData2[Constants.BlockTriangleData2[3 + (int) direction * 4]] + pos);
+		vertices.Add(Constants.BlockVertexData[Constants.BlockTriangleData[0 + (int) direction * 4]] + pos);
+		vertices.Add(Constants.BlockVertexData[Constants.BlockTriangleData[1 + (int) direction * 4]] + pos);
+		vertices.Add(Constants.BlockVertexData[Constants.BlockTriangleData[2 + (int) direction * 4]] + pos);
+		vertices.Add(Constants.BlockVertexData[Constants.BlockTriangleData[3 + (int) direction * 4]] + pos);
 
 		triangles.Add(vertexCount);
 		triangles.Add(vertexCount + 1);

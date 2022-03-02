@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,17 +17,20 @@ public class PlayerMovement : MonoBehaviour {
 
 	private Vector3 velocity;
 	private bool isGrounded;
-	
+	private float distToGround;
+
 	// Start is called before the first frame update
-	void Start() { }
+	void Start() {
+		distToGround = controller.center.y + controller.height / 2f + 0.1f;
+	}
 
 	// Update is called once per frame
 	void Update() {
-		isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+		CheckIfGrounded();
 
 		if (isGrounded && velocity.y < 0)
 			velocity.y = maxFallSpeed;
-		
+
 		float x = Input.GetAxis("Horizontal");
 		float z = Input.GetAxis("Vertical");
 
@@ -39,5 +43,19 @@ public class PlayerMovement : MonoBehaviour {
 		velocity.y += gravity * Time.deltaTime;
 
 		controller.Move(velocity * Time.deltaTime);
+	}
+
+	void CheckIfGrounded() {
+		Vector3 pos = controller.transform.position;
+		float radius = controller.radius;
+		
+		Vector3 right = pos + new Vector3(radius, 0, 0);
+		Vector3 left = pos - new Vector3(radius, 0, 0);
+		Vector3 forward = pos - new Vector3(0, 0, radius);
+		Vector3 back = pos + new Vector3(0, 0, radius);
+		isGrounded = Physics.Raycast(right, Vector3.down, distToGround) ||
+		             Physics.Raycast(left, Vector3.down, distToGround) ||
+		             Physics.Raycast(forward, Vector3.down, distToGround) ||
+		             Physics.Raycast(back, Vector3.down, distToGround);
 	}
 }

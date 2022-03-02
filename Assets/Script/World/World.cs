@@ -5,7 +5,7 @@ using MinecraftBlockRegistry;
 using Unity.Jobs;
 
 public class World : MonoBehaviour {
-	public ulong seed;
+	public int seed;
 
 	public int viewDistance;
 
@@ -21,10 +21,20 @@ public class World : MonoBehaviour {
 
 	void OnGUI() {
 		Vector3 playerPos = GameObject.Find("Player").transform.position;
-		GUI.Label(new Rect(10, 10, 150, 20), "Position: " + playerPos);
-		GUI.Label(new Rect(10, 35, 150, 20), "C: " + continentalness.GetNoise(playerPos.x, playerPos.z));
+		GUI.Label(new Rect(10, 10, 200, 20), "Position: " + playerPos);
+
+		float c = continentalness.GetNoise(playerPos.x, playerPos.z);
+		float e = erosion.GetNoise(playerPos.x, playerPos.z);
+		float pv = peaksAndValleys.GetNoise(playerPos.x, playerPos.z);
+
+		GUI.Label(new Rect(10, 35, 150, 20), "C: " + c);
+		GUI.Label(new Rect(160, 35, 150, 20), "C-eval: " + continentalnessShape.Evaluate(c));
+
 		GUI.Label(new Rect(10, 60, 150, 20), "E: " + erosion.GetNoise(playerPos.x, playerPos.z));
+		GUI.Label(new Rect(160, 60, 150, 20), "e-eval: " + erosionShape.Evaluate(e));
+
 		GUI.Label(new Rect(10, 85, 150, 20), "PV: " + peaksAndValleys.GetNoise(playerPos.x, playerPos.z));
+		GUI.Label(new Rect(160, 85, 150, 20), "pv-eval: " + peaksAndValleysShape.Evaluate(pv));
 
 		GUI.Label(new Rect(Screen.width - 150, 10, 150, 20), "FPS: " + 1.0f / Time.smoothDeltaTime);
 	}
@@ -58,9 +68,9 @@ public class World : MonoBehaviour {
 
 		float c = continentalnessShape.Evaluate(continentalness.GetNoise(x, z));
 		float e = erosionShape.Evaluate(erosion.GetNoise(x, z));
-		float p = peaksAndValleysShape.Evaluate(peaksAndValleys.GetNoise(x, z));
+		float pv = peaksAndValleysShape.Evaluate(peaksAndValleys.GetNoise(x, z));
 
-		int height = Mathf.FloorToInt((c + e + p) / 3);
+		int height = Mathf.FloorToInt((c + e + pv) / 3);
 
 		if (y > height)
 			return (int) BlockType.Air;
@@ -71,7 +81,7 @@ public class World : MonoBehaviour {
 		return (int) BlockType.Stone;
 	}
 
-	public static int GetBlock(Vector3 pos) {
+	public static int GetBlock(Vector3 pos) { 
 		return GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
 	}
 
@@ -82,6 +92,10 @@ public class World : MonoBehaviour {
 		erosion = noiseMaps[1];
 		peaksAndValleys = noiseMaps[2];
 
+		Debug.Log(continentalness.ToString());
+		Debug.Log(erosion.ToString());
+		Debug.Log(peaksAndValleys.ToString());
+
 		continentalness.seed = seed;
 		erosion.seed = seed;
 		peaksAndValleys.seed = seed;
@@ -90,8 +104,7 @@ public class World : MonoBehaviour {
 	void InitTerrainHeightSplines() {
 		List<Path> noiseMapHeights = JsonUtil.LoadNoiseMapHeights();
 		continentalnessShape = noiseMapHeights[0];
-		JsonUtil.PrintToJson(continentalnessShape);
-		erosionShape = new Path(Constants.ErosionSplinePoints);
-		peaksAndValleysShape = new Path(Constants.PeaksAndValleysSplinePoints);
+		erosionShape = noiseMapHeights[1];
+		peaksAndValleysShape = noiseMapHeights[2];
 	}
 }

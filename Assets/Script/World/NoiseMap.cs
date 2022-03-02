@@ -4,57 +4,52 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class NoiseMap {
-	public int width = 100;
-	public int height = 100;
-	public float offset = 0f;
-	public float scale = 0.1f;
-	[Range(0, 10)] public int octaveCount;
-	public bool isSharp;
-	[Range(0, 1)] public List<float> celThresholds;
-	public ulong seed;
-	public bool autoUpdate;
-	public string mapName;
+	public float offset;
+	public float scale;
+	public float lacunarity;
+	public float persistence;
+	public int octaveCount;
+	public bool useBillow;
 
-	Texture2D CreateNoiseMapTexture() {
-		Color[] noiseMap = new Color[width * height];
-
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				noiseMap[x * width + y] = Color.Lerp(
-					Color.black,
-					Color.white,
-					GetNoise(x, y)
-				);;
-			}
-		}
-
-		Texture2D noiseMapTexture = new Texture2D(width, height);
-		noiseMapTexture.SetPixels(noiseMap);
-		noiseMapTexture.Apply();
-
-		return noiseMapTexture;
+	public int seed {
+		set => InitNoise(value);
 	}
 
-	float GetNoiseCel(float value) {
-		if (value < celThresholds[0])
-			return 0f;
+	private FastNoise noise;
 
-		int i = 1;
-		while (i < celThresholds.Count) {
-			if (value < celThresholds[i]) {
-				return i / (float) celThresholds.Count;
-			}
-			i++;
-		}
 
-		return 1f;
+	public NoiseMap(float offset, float scale, int octaveCount, float lacunarity, float persistence, bool useBillow,
+		int seed) {
+		this.offset = offset;
+		this.scale = scale;
+		this.octaveCount = octaveCount;
+		this.lacunarity = lacunarity;
+		this.persistence = persistence;
+		this.useBillow = useBillow;
+		this.seed = seed;
 	}
 
 	public float GetNoise(float x, float y) {
-		float noise = isSharp
-			? NoiseGenerator.Perlin2DSharp(new Vector2(x, y), offset, scale, seed)
-			: NoiseGenerator.Perlin2D(new Vector2(x, y), offset, scale, octaveCount, seed);
+		return (noise.GetSimplexFractal(x + offset, y + offset) + 1) / 2;
+	}
 
-		return celThresholds.Count > 0 ? GetNoiseCel(noise) : noise;
+	public void InitNoise(int seed) {
+		noise = new FastNoise(seed);
+		noise.SetFractalOctaves(octaveCount);
+		noise.SetFractalLacunarity(lacunarity);
+		noise.SetFrequency(scale);
+		noise.SetFractalGain(persistence);
+		if (useBillow)
+			noise.SetFractalType(FastNoise.FractalType.Billow);
+	}
+
+	public override string ToString() {
+		return "NoiseMap(" +
+		       "offset=" + offset +
+		       ",scale=" + scale +
+		       ",octaves=" + octaveCount +
+		       ",lacunarity=" + lacunarity +
+		       ",persistence=" + persistence +
+		       ")";
 	}
 }
