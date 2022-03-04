@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using MinecraftBlockRegistry;
 using UnityEngine;
 
 public class Block {
@@ -7,13 +8,15 @@ public class Block {
 	private string blockName;
 	private Texture2D texture;
 	private int textureId;
+	private BlockState blockState;
 
-	public Block(int index, string name, string texturePath, int textureId) {
+	public Block(int index, BlockState blockState, string name, string texturePath, int textureId) {
 		this.index = index;
+		this.blockState = blockState;
 		this.blockName = name;
 		if (textureId >= 0) {
 			Texture2D texture = Resources.Load<Texture2D>(texturePath);
-			this.texture = new Texture2D(texture.width, texture.height, TextureFormat.RGB24, false) {
+			this.texture = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false) {
 				name = name
 			};
 			this.texture.SetPixels(texture.GetPixels());
@@ -36,5 +39,9 @@ public class Block {
 
 	public Texture2D GetTexture() {
 		return texture;
+	}
+
+	public BlockState GetBlockState() {
+		return blockState;
 	}
 }

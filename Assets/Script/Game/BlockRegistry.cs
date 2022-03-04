@@ -13,10 +13,11 @@ public static class BlockRegistry {
 	private static int textureAtlasSize;
 
 	public static void Init() {
-		AddBlock(new Block((int) BlockType.Air, "Air", "", -1));
-		AddBlock(new Block((int) BlockType.Bedrock, "Bedrock", "Texture/bedrock", 0));
-		AddBlock(new Block((int) BlockType.Stone, "Stone", "Texture/stone", 1));
-		AddBlock(new Block((int) BlockType.Dirt, "Dirt", "Texture/dirt", 2));
+		AddBlock(BlockType.Air, BlockState.Transparent, "Air", "");
+		AddBlock(BlockType.Bedrock, BlockState.Solid, "Bedrock", "Texture/bedrock");
+		AddBlock(BlockType.Stone, BlockState.Solid, "Stone", "Texture/stone");
+		AddBlock(BlockType.Dirt, BlockState.Solid, "Dirt", "Texture/dirt");
+		AddBlock(BlockType.Water, BlockState.Transparent, "Water", "Texture/water");
 
 		CreateTextureAtlas();
 	}
@@ -25,9 +26,10 @@ public static class BlockRegistry {
 		// no texture for air
 		textureAtlasSize = Mathf.CeilToInt(Mathf.Sqrt(blocks.Count - 1));
 		int atlasPixelSize = textureAtlasSize * textureRes;
-		textureAtlas = new Texture2D(atlasPixelSize, atlasPixelSize) {
+		textureAtlas = new Texture2D(atlasPixelSize, atlasPixelSize, TextureFormat.RGBA32, false) {
 			filterMode = FilterMode.Point
 		};
+
 
 		List<Texture2D> textures = new List<Texture2D>();
 		for (int i = 1; i < blocks.Count; i++) {
@@ -59,8 +61,14 @@ public static class BlockRegistry {
 		file.Close();
 	}
 
-	public static void AddBlock(Block block) {
+	static void AddBlock(BlockType blockType, BlockState blockState, string blockName, string texturePath) {
+		// Air index is -1, every other block goes up from there
+		Block block = new Block(blockType.GetIndex(), blockState, blockName, texturePath, blocks.Count - 1);
 		blocks.Add(block.GetIndex(), block);
+	}
+
+	public static Block GetBlock(BlockType blockType) {
+		return GetBlock(blockType.GetIndex());
 	}
 
 	public static Block GetBlock(int index) {
@@ -69,23 +77,25 @@ public static class BlockRegistry {
 
 		Debug.LogError("Failed to find index: " + index + " in block registry");
 
-		blocks.TryGetValue(0, out block);
-		return block;
+		return blocks[-1];
+	}
+
+	public static BlockState GetBlockState(BlockType blockType) {
+		return GetBlock(blockType).GetBlockState();
 	}
 
 	public static Texture2D GetTextureAtlas() {
 		return textureAtlas;
 	}
 
-	public static int GetTextureId(int index) {
-		return index - 1;
+	public static int GetTextureId(BlockType blockType) {
+		return blockType.GetIndex() - 1;
 	}
 
 	public static Vector2[] GetTextureVertices(int textureId) {
 		int textureAtlasSizeInPixels = textureAtlasSize * textureRes;
 		int texStartRow = (textureId / textureAtlasSize) * textureRes;
 		int texStartCol = (textureRes * textureId) % textureAtlasSizeInPixels;
-		
 
 		return new[] {
 			new Vector2(
@@ -110,6 +120,18 @@ namespace MinecraftBlockRegistry {
 		Air = 0,
 		Bedrock = 1,
 		Stone = 2,
-		Dirt = 3
+		Dirt = 3,
+		Water = 4
+	}
+
+	public static class BlockTypeExtension {
+		public static int GetIndex(this BlockType blockType) {
+			return (int) blockType;
+		}
+	}
+
+	public enum BlockState {
+		Solid,
+		Transparent
 	}
 }

@@ -1,9 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using UnityEngine;
 using MinecraftBlockRegistry;
+using UnityEngine;
 
 public class Chunk : MonoBehaviour {
 	private int[,,] blocks = new int[Constants.ChunkSize, Constants.WorldHeight, Constants.ChunkSize];
@@ -14,9 +12,10 @@ public class Chunk : MonoBehaviour {
 	private MeshCollider meshCollider;
 	private Mesh mesh;
 
-	public int vertexCount = 0;
+	public int vertexCount;
 	private List<Vector3> vertices = new List<Vector3>();
 	private List<int> triangles = new List<int>();
+	private List<int> waterTriangles = new List<int>();
 	private List<Vector3> normals = new List<Vector3>();
 	private List<Vector2> uv = new List<Vector2>();
 
@@ -37,7 +36,7 @@ public class Chunk : MonoBehaviour {
 			for (int z = 0; z < Constants.ChunkSize; z++) {
 				for (int y = 0; y < Constants.WorldHeight; y++) {
 					Vector3 pos = new Vector3(x, y, z);
-					SetBlock(pos, BlockRegistry.GetBlock(World.GetBlock(pos + chunkOrigin)));
+					SetBlock(pos, BlockRegistry.GetBlock(World.GetBlock(pos + chunkOrigin).GetIndex()));
 				}
 			}
 		}
@@ -47,19 +46,29 @@ public class Chunk : MonoBehaviour {
 		if (!meshFilter)
 			meshFilter = gameObject.AddComponent<MeshFilter>();
 		if (!meshRenderer) {
-			meshRenderer = gameObject.AddComponent<MeshRenderer>();
-			meshRenderer.material = new Material(Shader.Find("Standard")) {
+			Material[] materials = new Material[2];
+			materials[0] = new Material(Shader.Find("Standard")) {
 				mainTexture = BlockRegistry.GetTextureAtlas()
 			};
+			materials[1] = new Material(Shader.Find("Standard")) {
+				mainTexture = BlockRegistry.GetTextureAtlas()
+			};
+			StandardShaderUtils.ChangeRenderMode(materials[1], StandardShaderUtils.BlendMode.Transparent);
+
+			meshRenderer = gameObject.AddComponent<MeshRenderer>();
+			meshRenderer.materials = materials;
 		}
 
 		if (!meshCollider)
 			meshCollider = gameObject.AddComponent<MeshCollider>();
 
-		mesh = new Mesh();
+		mesh = new Mesh {
+			subMeshCount = 2
+		};
 
 		vertices = new List<Vector3>();
 		triangles = new List<int>();
+		waterTriangles = new List<int>();
 		normals = new List<Vector3>();
 		uv = new List<Vector2>();
 
@@ -70,18 +79,19 @@ public class Chunk : MonoBehaviour {
 		for (int x = 0; x < Constants.ChunkSize; x++) {
 			for (int z = 0; z < Constants.ChunkSize; z++) {
 				for (int y = 0; y < Constants.WorldHeight; y++) {
-					if (blocks[x, y, z] == (int) BlockType.Air)
+					if (blocks[x, y, z] == BlockType.Air.GetIndex())
 						continue;
 
 					List<BlockType> neighbours = GetNeighbours(x, y, z);
-					if (neighbours.Contains(BlockType.Air) || neighbours.Contains(BlockType.Null)) {
-						for (int j = 0; j < 6; j++) {
-							if (neighbours[j] == BlockType.Air || neighbours[j] == BlockType.Null)
-								CreateQuad(
-									(Direction) j,
-									new Vector3(x, y, z) + chunkOrigin,
-									BlockRegistry.GetTextureId(blocks[x, y, z])
-								);
+					for (int j = 0; j < 6; j++) {
+						Block block = BlockRegistry.GetBlock(blocks[x, y, z]);
+						if (block.GetBlockState() == BlockState.Transparent) {
+							if (neighbours[j] == BlockType.Null || neighbours[j] == BlockType.Air)
+								CreateQuad((Direction) j, new Vector3(x, y, z) + chunkOrigin, block.GetTextureId());
+						} else {
+							if (neighbours[j] == BlockType.Null ||
+							    BlockRegistry.GetBlockState(neighbours[j]) == BlockState.Transparent)
+								CreateQuad((Direction) j, new Vector3(x, y, z) + chunkOrigin, block.GetTextureId());
 						}
 					}
 				}
@@ -91,7 +101,8 @@ public class Chunk : MonoBehaviour {
 
 	public void ApplyMesh() {
 		mesh.vertices = vertices.ToArray();
-		mesh.triangles = triangles.ToArray();
+		mesh.SetTriangles(triangles.ToArray(), 0);
+		mesh.SetTriangles(waterTriangles.ToArray(), 1);
 		mesh.normals = normals.ToArray();
 		mesh.uv = uv.ToArray();
 
@@ -116,12 +127,21 @@ public class Chunk : MonoBehaviour {
 		vertices.Add(Constants.BlockVertexData[Constants.BlockTriangleData[2 + (int) direction * 4]] + pos);
 		vertices.Add(Constants.BlockVertexData[Constants.BlockTriangleData[3 + (int) direction * 4]] + pos);
 
-		triangles.Add(vertexCount);
-		triangles.Add(vertexCount + 1);
-		triangles.Add(vertexCount + 2);
-		triangles.Add(vertexCount + 2);
-		triangles.Add(vertexCount + 1);
-		triangles.Add(vertexCount + 3);
+		if (textureId != BlockRegistry.GetTextureId(BlockType.Water)) {
+			triangles.Add(vertexCount);
+			triangles.Add(vertexCount + 1);
+			triangles.Add(vertexCount + 2);
+			triangles.Add(vertexCount + 2);
+			triangles.Add(vertexCount + 1);
+			triangles.Add(vertexCount + 3);
+		} else {
+			waterTriangles.Add(vertexCount);
+			waterTriangles.Add(vertexCount + 1);
+			waterTriangles.Add(vertexCount + 2);
+			waterTriangles.Add(vertexCount + 2);
+			waterTriangles.Add(vertexCount + 1);
+			waterTriangles.Add(vertexCount + 3);
+		}
 
 		vertexCount += 4;
 
@@ -138,7 +158,7 @@ public class Chunk : MonoBehaviour {
 		}
 
 		for (int y = Constants.WorldHeight - 1; y >= 0; y--) {
-			if (blocks[x, y, z] != (int) BlockType.Air) {
+			if (blocks[x, y, z] != BlockType.Air.GetIndex()) {
 				return y;
 			}
 		}

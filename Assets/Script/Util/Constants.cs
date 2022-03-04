@@ -5,6 +5,7 @@ using UnityEngine;
 public class Constants {
 	public const int ChunkSize = 16;
 	public const int WorldHeight = 128;
+	public const int WaterLevel = 50;
 	public const int ConfigDecimalPrecision = 3;
 
 

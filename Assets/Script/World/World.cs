@@ -6,7 +6,6 @@ using Unity.Jobs;
 
 public class World : MonoBehaviour {
 	public int seed;
-
 	public int viewDistance;
 
 	private ChunkManager chunkManager;
@@ -62,9 +61,9 @@ public class World : MonoBehaviour {
 		- Temperature and humidity have no impact on the terrain itself, and determining only biome placement.
 		- Weirdness indirectly drives the PV (peaks and valleys) noise and determines which biome variant gets placed.
 	 */
-	public static int GetBlock(int x, int y, int z) {
+	public static BlockType GetBlock(int x, int y, int z) {
 		if (y <= 3)
-			return (int) BlockType.Bedrock;
+			return BlockType.Bedrock;
 
 		float c = continentalnessShape.Evaluate(continentalness.GetNoise(x, z));
 		float e = erosionShape.Evaluate(erosion.GetNoise(x, z));
@@ -73,15 +72,18 @@ public class World : MonoBehaviour {
 		int height = Mathf.FloorToInt((c + e + pv) / 3);
 
 		if (y > height)
-			return (int) BlockType.Air;
+			if (y > Constants.WaterLevel)
+				return BlockType.Air;
+			else
+				return BlockType.Water;
 
 		if (y > height - 3)
-			return (int) BlockType.Dirt;
+			return BlockType.Dirt;
 
-		return (int) BlockType.Stone;
+		return BlockType.Stone;
 	}
 
-	public static int GetBlock(Vector3 pos) { 
+	public static BlockType GetBlock(Vector3 pos) { 
 		return GetBlock((int) pos.x, (int) pos.y, (int) pos.z);
 	}
 
